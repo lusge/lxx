@@ -1,0 +1,7 @@
+ARG_ENABLE('lxx', 'lxx support', 'no');
+
+if (PHP_LXX != 'no') {
+	AC_DEFINE('HAVE_LXX', 1, 'lxx support enabled');
+
+	EXTENSION('lxx', 'lxx.c', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1');
+}
