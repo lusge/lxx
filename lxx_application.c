@@ -6,10 +6,12 @@
 #include "ext/standard/info.h"
 #include "ext/standard/php_var.h"
 #include "ext/standard/php_string.h"
+#include "Zend/zend_interfaces.h"
 
 #include "php_lxx.h"
 #include "lxx_application.h"
 #include "lxx_router.h"
+#include "lxx_loader.h"
 
 zend_class_entry *lxx_application_ce;
 static zend_object_handlers lxx_application_handlers;
@@ -40,6 +42,72 @@ static void lxx_application_free(zend_object *object) {
     zend_object_std_dtor(object);
 }
 
+static void lxx_application_function_handle(zval *this) {
+    zval *func;
+
+    lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(this));
+    func = lxx_router_match_router(Z_OBJ(app->router));
+
+    if (func) {
+        if (Z_TYPE_P(func) == IS_OBJECT) {
+            zval retval;
+            call_user_function(CG(function_table), NULL, func, &retval, 1, this);
+            if (Z_TYPE(retval) == IS_STRING) {
+                zend_printf(" %s ", Z_STRVAL(retval));
+            }
+            zval_ptr_dtor(&retval);
+
+        } else if (Z_TYPE_P(func) == IS_STRING){
+            zend_string *controller;
+            zend_string *namespace_controller;
+            zend_string *action;
+            zend_string *lc_action;
+            char *pos;
+            
+            pos = strchr(Z_STRVAL_P(func), '@');
+            controller = zend_string_init(Z_STRVAL_P(func), pos - Z_STRVAL_P(func), 0);
+            lxx_router_set_controller(Z_OBJ(app->router), controller);
+
+            namespace_controller = strpprintf(0, "controllers\\%s", ZSTR_VAL(controller));
+            
+            action = zend_string_init(pos+1, Z_STRLEN_P(func) - (pos - Z_STRVAL_P(func)) - 1, 0);
+            lxx_router_set_action(Z_OBJ(app->router), action);
+            lc_action = zend_string_tolower(action);
+
+            zend_class_entry *ce = zend_lookup_class(namespace_controller);
+
+            if (ce) {
+                zval class_object;
+                zval ret;
+                object_init_ex(&class_object, ce);
+                zend_call_method_with_0_params(&class_object, ce, NULL, "before", &ret);
+
+                if (Z_TYPE(ret) != IS_TRUE) {
+                    zval_ptr_dtor(&ret);
+                    zval_ptr_dtor(&class_object);
+                    // zend_printf("true <br>");
+                    return;
+                }
+                // ZVAL_NULL(&ret);
+                zend_call_method(&class_object, ce, NULL, ZSTR_VAL(lc_action), ZSTR_LEN(lc_action), &ret, 0, NULL, NULL);
+                zval_ptr_dtor(&class_object);
+            } else {
+                zend_error_noreturn(E_ERROR, "Couldn't find controller and action");
+            }
+
+            zend_printf("controller  %s, namespace controller = %s, action = %s, len = %ld", ZSTR_VAL(controller),ZSTR_VAL(namespace_controller), ZSTR_VAL(action), Z_STRLEN_P(func));
+            zend_string_release(controller);
+            zend_string_release(namespace_controller);
+            zend_string_release(action);
+            zend_string_release(lc_action);
+        } else {
+            php_error(E_ERROR, "It can only be string or function in %s on %d ", __FILE__, __LINE__);
+        }
+    } else {
+        php_error(E_ERROR, "Function not found in %s on %d ", __FILE__, __LINE__);
+    } 
+}
+
 ZEND_BEGIN_ARG_INFO_EX(lxx_application_ctor_arginfo, 0, 0, 1)
     ZEND_ARG_INFO(0, dir)
 ZEND_END_ARG_INFO()
@@ -56,6 +124,7 @@ ZEND_METHOD(lxx_application, __construct) {
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
     lxx_router_instance(&app->router);
 
+    lxx_loader_instance();
     zend_update_static_property(lxx_application_ce, ZEND_STRL(LXX_APPLICATION_APP), getThis());
 }
 
@@ -71,24 +140,7 @@ ZEND_BEGIN_ARG_INFO_EX(lxx_application_run_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_METHOD(lxx_application, run) {
-    zval *func;
-
-    lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
-    func = lxx_router_match_router(Z_OBJ(app->router));
-
-    if (func) {
-        if (Z_TYPE_P(func) == IS_OBJECT) {
-            zval retval;
-            zval params;
-            array_init(&params);
-            add_next_index_zval(&params, getThis());
-            call_user_function(CG(function_table), NULL, func, &retval, 1, &params);
-            zval_ptr_dtor(&params);
-            zval_ptr_dtor(&retval);
-        } else {
-
-        }
-    }    
+    lxx_application_function_handle(getThis()); 
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_application_router_arginfo, 0, 0, 0)

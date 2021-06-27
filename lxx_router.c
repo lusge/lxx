@@ -48,6 +48,15 @@ static void lxx_router_free(zend_object *object) {
 			zend_array_destroy(router->routes);
 		}
 	}
+
+    if (router->controller) {
+        zend_string_release(router->controller);
+    }
+
+    if (router->action) {
+        zend_string_release(router->action);
+    }
+
     zval_ptr_dtor(&router->radix_tree);
     zval_ptr_dtor(&router->request);
     zend_object_std_dtor(object);
@@ -109,8 +118,8 @@ static void lxx_router_add_router(INTERNAL_FUNCTION_PARAMETERS, const char *meth
     zend_string *reg_str;
     zval *func;
     zval pData;
-    int pos;
-    int spos;
+    char *pos;
+    char *spos;
     int mlen = strlen(method);
 
     lxx_router_t *router = lxx_router_fetch(Z_OBJ_P(getThis()));
@@ -124,11 +133,11 @@ static void lxx_router_add_router(INTERNAL_FUNCTION_PARAMETERS, const char *meth
     memcpy(ZSTR_VAL(new_path), method, mlen);
     memcpy(ZSTR_VAL(new_path) + mlen, ZSTR_VAL(path), ZSTR_LEN(path) + 1);
 
-    pos = strchr(ZSTR_VAL(new_path), '{') - ZSTR_VAL(new_path);
-    if (pos >= 0) {
-        key = zend_string_init(ZSTR_VAL(new_path), pos, 0);
-    } else if ((spos = strchr(ZSTR_VAL(new_path), '*') - ZSTR_VAL(new_path)) >= 0) {
-        key = zend_string_init(ZSTR_VAL(new_path), spos, 0);
+    pos = strchr(ZSTR_VAL(new_path), '{');// - ZSTR_VAL(new_path);
+    if (pos != NULL) {
+        key = zend_string_init(ZSTR_VAL(new_path), pos - ZSTR_VAL(new_path), 0);
+    } else if ((spos = strchr(ZSTR_VAL(new_path), '*')) != NULL) {
+        key = zend_string_init(ZSTR_VAL(new_path), spos - ZSTR_VAL(new_path), 0);
     } else {
         key = zend_string_init(ZSTR_VAL(new_path), ZSTR_LEN(new_path), 0);
     }
@@ -244,6 +253,16 @@ zval *lxx_router_match_router(zend_object *object) {
     zval_ptr_dtor(&matches);
     zval_ptr_dtor(&subparts);
     return func;
+}
+
+void lxx_router_set_controller(zend_object *object, zend_string *controller) {
+    lxx_router_t *router = lxx_router_fetch(object);
+    router->controller = zend_string_copy(controller);
+}
+
+void lxx_router_set_action(zend_object *object, zend_string *action) {
+    lxx_router_t *router = lxx_router_fetch(object);
+    router->action = zend_string_copy(action);
 }
 
 ZEND_METHOD(lxx_router, __construct) {

@@ -11,17 +11,18 @@ $router->get("/user/member/{id}", function(){
 });
 
 $router->get("/user/b/{a}/{id}", function($app){
-    var_dump($app);
-    echo "Hello 33!\n";
+    return "Hello 33!\n";
 });
 
 $router->post("/user/b/{a}", function(){
     echo "Hello 44!\n";
 });
 
-$router->post("/a-{a}", function(){
-    echo "Hello 55!\n";
-});
+$router->get("/a-{a}", "Index@Index");
+
+// $router->get("/a-{a}", function(){
+//     echo "Hello 55!\n";
+// });
 
 $router->get("/user/b/a", function(){
     echo "Hello 66!\n";
