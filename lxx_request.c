@@ -43,11 +43,11 @@ static void lxx_request_free(zend_object *object) {
     }
 
     if (request->params) {
-		if (GC_DELREF(request->params) == 0) {
-			GC_REMOVE_FROM_BUFFER(request->params);
-			zend_array_destroy(request->params);
-		}
-	}
+        if (GC_DELREF(request->params) == 0) {
+            GC_REMOVE_FROM_BUFFER(request->params);
+            zend_array_destroy(request->params);
+        }
+    }
 
     zend_object_std_dtor(object);
 }
