@@ -70,7 +70,7 @@ zend_string *lxx_request_get_method(zend_object *object) {
     lxx_request_t *request = lxx_request_fetch(object);
 
     if (request->method) {
-        return zend_string_copy(request->method);
+        return request->method;
     }
 
     if (SG(request_info).request_method) {
@@ -81,7 +81,7 @@ zend_string *lxx_request_get_method(zend_object *object) {
         request->method = zend_string_init("UNKNOW", sizeof("UNKNOW") - 1, 0);
     }
 
-    return zend_string_copy(request->method);;
+    return request->method;
 }
 
 zend_string *lxx_request_get_base_uri(zend_object *object) {

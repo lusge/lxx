@@ -11,6 +11,19 @@ extern zend_module_entry lxx_module_entry;
 #define LXX_STARTUP(module)                 ZEND_MODULE_STARTUP_N(lxx_##module)(INIT_FUNC_ARGS_PASSTHRU)
 #define LXX_MINIT_FUNCTION(module)          ZEND_MINIT_FUNCTION(lxx_##module)
 
+
+ZEND_BEGIN_MODULE_GLOBALS(lxx)
+	zend_string *app_dir;
+ZEND_END_MODULE_GLOBALS(lxx)
+
+extern ZEND_DECLARE_MODULE_GLOBALS(lxx);
+
+#ifdef ZTS
+#define LXX_G(v) TSRMG(lxx_globals_id, zend_lxx_globals *, v)
+#else
+#define LXX_G(v) (lxx_globals.v)
+#endif
+
 # if defined(ZTS) && defined(COMPILE_DL_LXX)
 ZEND_TSRMLS_CACHE_EXTERN()
 # endif

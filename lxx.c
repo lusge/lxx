@@ -11,43 +11,13 @@
 #include "lxx_router.h"
 #include "tools/lxx_radix_tree.h"
 #include "lxx_request.h"
+#include "lxx_application.h"
+#include "lxx_config.h"
+#include "lxx_controller.h"
+#include "lxx_loader.h"
+#include "lxx_response.h"
 
-
-/* For compatibility with older PHP versions */
-#ifndef ZEND_PARSE_PARAMETERS_NONE
-#define ZEND_PARSE_PARAMETERS_NONE() \
-	ZEND_PARSE_PARAMETERS_START(0, 0) \
-	ZEND_PARSE_PARAMETERS_END()
-#endif
-
-/* {{{ void lxx_test1()
- */
-PHP_FUNCTION(lxx_test1)
-{
-	ZEND_PARSE_PARAMETERS_NONE();
-
-	php_printf("The extension %s is loaded and working!\r\n", "lxx");
-}
-/* }}} */
-
-/* {{{ string lxx_test2( [ string $var ] )
- */
-PHP_FUNCTION(lxx_test2)
-{
-	char *var = "World";
-	size_t var_len = sizeof("World") - 1;
-	zend_string *retval;
-
-	ZEND_PARSE_PARAMETERS_START(0, 1)
-		Z_PARAM_OPTIONAL
-		Z_PARAM_STRING(var, var_len)
-	ZEND_PARSE_PARAMETERS_END();
-
-	retval = strpprintf(0, "Hello %s", var);
-
-	RETURN_STR(retval);
-}
-/* }}}*/
+ZEND_DECLARE_MODULE_GLOBALS(lxx);
 
 /* 初始化module时运行 */
 PHP_MINIT_FUNCTION(lxx)
@@ -55,7 +25,11 @@ PHP_MINIT_FUNCTION(lxx)
 	/* If you have INI entries, uncomment these lines
 	REGISTER_INI_ENTRIES();
 	*/
-
+	LXX_STARTUP(application);
+	LXX_STARTUP(config);
+	LXX_STARTUP(controller);
+	LXX_STARTUP(loader);
+	LXX_STARTUP(response);
 	LXX_STARTUP(request);
 	LXX_STARTUP(raxTree);
 	LXX_STARTUP(router);
@@ -109,21 +83,12 @@ ZEND_BEGIN_ARG_INFO(arginfo_lxx_test2, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
 
-/* {{{ lxx_functions[]
- */
-static const zend_function_entry lxx_functions[] = {
-	PHP_FE(lxx_test1,		arginfo_lxx_test1)
-	PHP_FE(lxx_test2,		arginfo_lxx_test2)
-	PHP_FE_END
-};
-/* }}} */
-
 /* {{{ lxx_module_entry
  */
 zend_module_entry lxx_module_entry = {
 	STANDARD_MODULE_HEADER,
 	"lxx",					/* Extension name */
-	lxx_functions,			/* zend_function_entry */
+	NULL,			/* zend_function_entry */
 	PHP_MINIT(lxx),			/* PHP_MINIT - Module initialization */
 	PHP_MSHUTDOWN(lxx),		/* PHP_MSHUTDOWN - Module shutdown */
 	PHP_RINIT(lxx),			/* PHP_RINIT - Request initialization */

@@ -48,10 +48,13 @@ static void lxx_router_free(zend_object *object) {
 			zend_array_destroy(router->routes);
 		}
 	}
-
     zval_ptr_dtor(&router->radix_tree);
     zval_ptr_dtor(&router->request);
     zend_object_std_dtor(object);
+}
+
+void lxx_router_instance(zval *this_ptr) {
+    object_init_ex(this_ptr, lxx_router_ce);
 }
 
 static void lxx_router_insert_router(lxx_router_t *router, zend_string *path, zval *pData) {
@@ -162,6 +165,7 @@ zval *lxx_router_match_router(zend_object *object) {
 
     method = lxx_request_get_method(Z_OBJ(router->request));
     if (!method) {
+        zend_string_release(method);
         return NULL;
     }
 
@@ -227,10 +231,11 @@ zval *lxx_router_match_router(zend_object *object) {
     }
 #endif
 
+    zend_string_release(new_path);
+
     if (!zend_hash_num_elements(Z_ARRVAL(subparts))) {
         zval_ptr_dtor(&matches);
         zval_ptr_dtor(&subparts);
-        zend_string_release(new_path);
         return func;
     }
     
@@ -238,7 +243,6 @@ zval *lxx_router_match_router(zend_object *object) {
     
     zval_ptr_dtor(&matches);
     zval_ptr_dtor(&subparts);
-    zend_string_release(new_path);
     return func;
 }
 
