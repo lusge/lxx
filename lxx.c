@@ -60,6 +60,9 @@ PHP_RINIT_FUNCTION(lxx)
 /*当一个REQUEST请求结束时运行*/
 PHP_RSHUTDOWN_FUNCTION(lxx)
 {
+	if (LXX_G(app_dir)) {
+		zend_string_release(LXX_G(app_dir));
+	}
     return SUCCESS;
 }
 
