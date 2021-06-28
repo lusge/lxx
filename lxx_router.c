@@ -275,6 +275,11 @@ ZEND_METHOD(lxx_router, __construct) {
     
 }
 
+ZEND_BEGIN_ARG_INFO_EX(lxx_router_request_argin, 0, 0, 2)
+    ZEND_ARG_INFO(0, path)
+    ZEND_ARG_INFO(0, func)
+ZEND_END_ARG_INFO()
+
 ZEND_METHOD(lxx_router, get) {
     lxx_router_add_router(INTERNAL_FUNCTION_PARAM_PASSTHRU, "GET");
 }
@@ -315,32 +320,33 @@ ZEND_METHOD(lxx_router, cli) {
     lxx_router_add_router(INTERNAL_FUNCTION_PARAM_PASSTHRU, "CLI");
 }
 
-ZEND_METHOD(lxx_router, match) {
-    zval *func = lxx_router_match_router(Z_OBJ_P(getThis()));
+ZEND_BEGIN_ARG_INFO_EX(lxx_router_null_argin, 0, 0, 0)
+ZEND_END_ARG_INFO()
 
-    if (func) {
-        zval retval;
-        call_user_function(CG(function_table), NULL, func, &retval, 0, NULL);
-        zval_ptr_dtor(&retval);
-        RETURN_TRUE;
-    }
+ZEND_METHOD(lxx_router, controller) {
+    lxx_router_t *router = lxx_router_fetch(Z_OBJ_P(getThis()));
+    RETURN_STR(router->controller);
+}
 
-    RETURN_FALSE;
+ZEND_METHOD(lxx_router, action) {
+    lxx_router_t *router = lxx_router_fetch(Z_OBJ_P(getThis()));
+    RETURN_STR(router->action);
 }
 
 zend_function_entry lxx_router_methods[] = {
-    ZEND_ME(lxx_router, __construct, NULL, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, get, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, post, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, put, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, delete, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, patch, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, head, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, options, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, connect, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, trace, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, cli, NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_router, match, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, __construct, lxx_router_null_argin, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, get, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, post, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, put, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, delete, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, patch, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, head, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, options, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, connect, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, trace, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, cli, lxx_router_request_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, controller, lxx_router_null_argin, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_router, action, lxx_router_null_argin, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 

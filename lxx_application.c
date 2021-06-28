@@ -64,7 +64,8 @@ static void lxx_application_call_function(lxx_application_t *app, zend_string *c
         if (Z_TYPE(ret) == IS_STRING) {
             goto response_send;
         }
-
+        
+        zval_ptr_dtor(&ret);
         zend_call_method(&class_object, ce, NULL, ZSTR_VAL(lc_action), ZSTR_LEN(lc_action), &ret, 0, NULL, NULL);
         
 response_send:
@@ -73,6 +74,7 @@ response_send:
         }
         zend_call_method_with_0_params(&class_object, ce, NULL, "after", NULL);
         zval_ptr_dtor(&class_object);
+        zval_ptr_dtor(&ret);
     } else {
         zend_error_noreturn(E_ERROR, "Couldn't find controller and action");
     }
@@ -126,7 +128,7 @@ static void lxx_application_load_router_file() {
     memcpy(ZSTR_VAL(router_dir), ZSTR_VAL(LXX_G(app_dir)), ZSTR_LEN(LXX_G(app_dir)));
     memcpy(ZSTR_VAL(router_dir) + ZSTR_LEN(LXX_G(app_dir)), LXX_APPLICATION_ROUTE_DIR, sizeof(LXX_APPLICATION_ROUTE_DIR) - 1);
     ZSTR_VAL(router_dir)[len] = '\0';
-    
+
     lxx_loader_include(router_dir, NULL);
     zend_string_release(router_dir);
 }

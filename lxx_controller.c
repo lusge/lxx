@@ -57,21 +57,27 @@ ZEND_BEGIN_ARG_INFO_EX(lxx_controller_Prepare_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_METHOD(lxx_controller, Prepare) {
-    // lxx_controller_t *controller = lxx_controller_fetch(Z_OBJ_P(getThis()));
-    // php_var_dump(&controller->request,2);
-    // php_var_dump(&controller->router,2);
+    RETURN_NULL();
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_controller_after_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_METHOD(lxx_controller, After) {
-    
+}
+
+ZEND_BEGIN_ARG_INFO_EX(lxx_controller_router_arginfo, 0, 0, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_METHOD(lxx_controller, router) {
+    lxx_controller_t *controller = lxx_controller_fetch(Z_OBJ_P(getThis()));
+    RETURN_ZVAL(&controller->router, 0, 1);
 }
 
 zend_function_entry lxx_controller_methods[] = {
     ZEND_ME(lxx_controller, Prepare, lxx_controller_Prepare_arginfo, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, After, lxx_controller_after_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_controller, router, lxx_controller_router_arginfo, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 
