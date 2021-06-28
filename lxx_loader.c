@@ -46,12 +46,12 @@ void lxx_loader_instance() {
 }
 
 
-static int lxx_loader_include(zend_string *filename, zval *retval) {
+int lxx_loader_include(zend_string *filename, zval *retval) {
 
     zend_file_handle file_handle;
 	zend_op_array 	*op_array;
 	char realpath[MAXPATHLEN];
-
+    
 	if (!VCWD_REALPATH(ZSTR_VAL(filename), realpath)) {
         zend_error(E_ERROR, "Failed opening template %s: %s", ZSTR_VAL(filename), strerror(errno));
 		return 0;

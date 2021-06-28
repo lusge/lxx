@@ -204,7 +204,8 @@ zval *lxx_router_match_router(zend_object *object) {
     }
 
     route = zend_hash_index_find(router->routes, idx);
-
+    // zend_printf(" idx is %ld <br>", idx);
+    // php_var_dump(route, 2);
     zval *regexp = zend_hash_str_find(Z_ARR_P(route), "reg", sizeof("reg") - 1);
     zval *key = zend_hash_str_find(Z_ARR_P(route), "key", sizeof("key") - 1);
     zval *func = zend_hash_str_find(Z_ARR_P(route), "func", sizeof("func") - 1);

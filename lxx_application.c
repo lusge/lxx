@@ -48,8 +48,6 @@ static void lxx_application_call_function(lxx_application_t *app, zend_string *c
     zend_string *lc_action;
 
     namespace_controller = strpprintf(0, "controllers\\%s", ZSTR_VAL(controller));
-            
-            
     lc_action = zend_string_tolower(action);
 
     zend_class_entry *ce = zend_lookup_class(namespace_controller);
@@ -66,7 +64,7 @@ static void lxx_application_call_function(lxx_application_t *app, zend_string *c
         if (Z_TYPE(ret) == IS_STRING) {
             goto response_send;
         }
-        
+
         zend_call_method(&class_object, ce, NULL, ZSTR_VAL(lc_action), ZSTR_LEN(lc_action), &ret, 0, NULL, NULL);
         
 response_send:
@@ -122,6 +120,17 @@ static void lxx_application_function_handle(zval *this) {
     } 
 }
 
+static void lxx_application_load_router_file() {
+    size_t len = ZSTR_LEN(LXX_G(app_dir)) + (sizeof(LXX_APPLICATION_ROUTE_DIR) - 1);
+    zend_string *router_dir = zend_string_alloc(len , 0);
+    memcpy(ZSTR_VAL(router_dir), ZSTR_VAL(LXX_G(app_dir)), ZSTR_LEN(LXX_G(app_dir)));
+    memcpy(ZSTR_VAL(router_dir) + ZSTR_LEN(LXX_G(app_dir)), LXX_APPLICATION_ROUTE_DIR, sizeof(LXX_APPLICATION_ROUTE_DIR) - 1);
+    ZSTR_VAL(router_dir)[len] = '\0';
+    
+    lxx_loader_include(router_dir, NULL);
+    zend_string_release(router_dir);
+}
+
 ZEND_BEGIN_ARG_INFO_EX(lxx_application_ctor_arginfo, 0, 0, 1)
     ZEND_ARG_INFO(0, dir)
 ZEND_END_ARG_INFO()
@@ -135,13 +144,15 @@ ZEND_METHOD(lxx_application, __construct) {
 
     LXX_G(app_dir) = php_trim(dir, (char *)"/", sizeof("/")-1, 2);
 
+    zend_update_static_property(lxx_application_ce, ZEND_STRL(LXX_APPLICATION_APP), getThis());
+
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
     lxx_router_instance(&app->router);
 
     lxx_response_instance(&app->response);
 
     lxx_loader_instance();
-    zend_update_static_property(lxx_application_ce, ZEND_STRL(LXX_APPLICATION_APP), getThis());
+    lxx_application_load_router_file();
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_application_app_arginfo, 0, 0, 0)

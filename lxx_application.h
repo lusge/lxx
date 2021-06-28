@@ -1,7 +1,8 @@
 #ifndef LXX_APPLICATION_H
 #define LXX_APPLICATION_H
 
-#define LXX_APPLICATION_APP     "app"
+#define LXX_APPLICATION_APP         "app"
+#define LXX_APPLICATION_ROUTE_DIR   "/routers/router.php"
 
 
 typedef struct {
