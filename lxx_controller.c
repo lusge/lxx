@@ -32,8 +32,8 @@ static void lxx_controller_free(zend_object *object) {
     lxx_controller_t *controller = lxx_controller_fetch(object);
 
     zval_ptr_dtor(&controller->router);
-
     zval_ptr_dtor(&controller->request);
+    zval_ptr_dtor(&controller->response);
 
     zend_object_std_dtor(object);
 }
@@ -46,6 +46,11 @@ void lxx_controller_set_router(zend_object *object, zval *router) {
 void lxx_controller_set_request(zend_object *object, zval *request) {
     lxx_controller_t *controller = lxx_controller_fetch(object);
     ZVAL_COPY(&controller->request, request);
+}
+
+void lxx_controller_set_response(zend_object *object, zval *response) {
+    lxx_controller_t *controller = lxx_controller_fetch(object);
+    ZVAL_COPY(&controller->response, response);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_controller_Prepare_arginfo, 0, 0, 0)
