@@ -31,45 +31,42 @@ static lxx_controller_t *lxx_controller_fetch(zend_object *object) {
 static void lxx_controller_free(zend_object *object) {
     lxx_controller_t *controller = lxx_controller_fetch(object);
 
-    if (controller->router) {
-        zval_ptr_dtor(controller->router);
-    }
+    zval_ptr_dtor(&controller->router);
 
-    if (controller->request) {
-        zval_ptr_dtor(controller->request);
-    }
+    zval_ptr_dtor(&controller->request);
 
     zend_object_std_dtor(object);
 }
 
 void lxx_controller_set_router(zend_object *object, zval *router) {
     lxx_controller_t *controller = lxx_controller_fetch(object);
-    ZVAL_COPY(controller->router, router);
+    ZVAL_COPY(&controller->router, router);
 }
 
 void lxx_controller_set_request(zend_object *object, zval *request) {
     lxx_controller_t *controller = lxx_controller_fetch(object);
-    ZVAL_COPY(controller->request, request);
+    ZVAL_COPY(&controller->request, request);
 }
 
-ZEND_BEGIN_ARG_INFO_EX(lxx_controller_before_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(lxx_controller_Prepare_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_METHOD(lxx_controller, before) {
-
-    RETURN_TRUE;
+ZEND_METHOD(lxx_controller, Prepare) {
+    // lxx_controller_t *controller = lxx_controller_fetch(Z_OBJ_P(getThis()));
+    // php_var_dump(&controller->request,2);
+    // php_var_dump(&controller->router,2);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_controller_after_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_METHOD(lxx_controller, after) {
+ZEND_METHOD(lxx_controller, After) {
     
 }
 
 zend_function_entry lxx_controller_methods[] = {
-    ZEND_ME(lxx_controller, before, lxx_controller_before_arginfo, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_controller, after, lxx_controller_after_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_controller, Prepare, lxx_controller_Prepare_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_controller, After, lxx_controller_after_arginfo, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 

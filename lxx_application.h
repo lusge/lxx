@@ -6,8 +6,11 @@
 
 typedef struct {
     zval        router;
+    zval        response;
     zend_object std;
 } lxx_application_t;
+
+
 
 LXX_MINIT_FUNCTION(application);
 

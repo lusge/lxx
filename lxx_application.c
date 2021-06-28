@@ -12,6 +12,8 @@
 #include "lxx_application.h"
 #include "lxx_router.h"
 #include "lxx_loader.h"
+#include "lxx_controller.h"
+#include "lxx_response.h"
 
 zend_class_entry *lxx_application_ce;
 static zend_object_handlers lxx_application_handlers;
@@ -35,11 +37,50 @@ static lxx_application_t *lxx_application_fetch(zend_object *object) {
 static void lxx_application_free(zend_object *object) {
     lxx_application_t *app = lxx_application_fetch(object);
 
-    if (Z_TYPE(app->router) != IS_UNDEF) {
-        OBJ_RELEASE(Z_OBJ(app->router));
-    }
+    zval_ptr_dtor(&app->router);
+    zval_ptr_dtor(&app->response);
 
     zend_object_std_dtor(object);
+}
+
+static void lxx_application_call_function(lxx_application_t *app, zend_string *controller, zend_string *action) {
+    zend_string *namespace_controller;
+    zend_string *lc_action;
+
+    namespace_controller = strpprintf(0, "controllers\\%s", ZSTR_VAL(controller));
+            
+            
+    lc_action = zend_string_tolower(action);
+
+    zend_class_entry *ce = zend_lookup_class(namespace_controller);
+    
+    if (ce) {
+        zval class_object;
+        zval ret;
+        object_init_ex(&class_object, ce);
+        lxx_controller_set_router(Z_OBJ(class_object), &app->router);
+        zval *request = lxx_router_get_request(Z_OBJ(app->router));
+        lxx_controller_set_request(Z_OBJ(class_object), request);
+        
+        zend_call_method_with_0_params(&class_object, ce, NULL, "prepare", &ret);
+        if (Z_TYPE(ret) == IS_STRING) {
+            goto response_send;
+        }
+        
+        zend_call_method(&class_object, ce, NULL, ZSTR_VAL(lc_action), ZSTR_LEN(lc_action), &ret, 0, NULL, NULL);
+        
+response_send:
+        if (Z_TYPE(ret) == IS_STRING) {
+            lxx_response_send(Z_OBJ(app->response), Z_STRVAL(ret), Z_STRLEN(ret));
+        }
+        zend_call_method_with_0_params(&class_object, ce, NULL, "after", NULL);
+        zval_ptr_dtor(&class_object);
+    } else {
+        zend_error_noreturn(E_ERROR, "Couldn't find controller and action");
+    }
+
+    zend_string_release(namespace_controller);
+    zend_string_release(lc_action);
 }
 
 static void lxx_application_function_handle(zval *this) {
@@ -59,47 +100,20 @@ static void lxx_application_function_handle(zval *this) {
 
         } else if (Z_TYPE_P(func) == IS_STRING){
             zend_string *controller;
-            zend_string *namespace_controller;
             zend_string *action;
-            zend_string *lc_action;
             char *pos;
             
             pos = strchr(Z_STRVAL_P(func), '@');
             controller = zend_string_init(Z_STRVAL_P(func), pos - Z_STRVAL_P(func), 0);
             lxx_router_set_controller(Z_OBJ(app->router), controller);
 
-            namespace_controller = strpprintf(0, "controllers\\%s", ZSTR_VAL(controller));
-            
             action = zend_string_init(pos+1, Z_STRLEN_P(func) - (pos - Z_STRVAL_P(func)) - 1, 0);
             lxx_router_set_action(Z_OBJ(app->router), action);
-            lc_action = zend_string_tolower(action);
 
-            zend_class_entry *ce = zend_lookup_class(namespace_controller);
+            lxx_application_call_function(app, controller, action);
 
-            if (ce) {
-                zval class_object;
-                zval ret;
-                object_init_ex(&class_object, ce);
-                zend_call_method_with_0_params(&class_object, ce, NULL, "before", &ret);
-
-                if (Z_TYPE(ret) != IS_TRUE) {
-                    zval_ptr_dtor(&ret);
-                    zval_ptr_dtor(&class_object);
-                    // zend_printf("true <br>");
-                    return;
-                }
-                // ZVAL_NULL(&ret);
-                zend_call_method(&class_object, ce, NULL, ZSTR_VAL(lc_action), ZSTR_LEN(lc_action), &ret, 0, NULL, NULL);
-                zval_ptr_dtor(&class_object);
-            } else {
-                zend_error_noreturn(E_ERROR, "Couldn't find controller and action");
-            }
-
-            zend_printf("controller  %s, namespace controller = %s, action = %s, len = %ld", ZSTR_VAL(controller),ZSTR_VAL(namespace_controller), ZSTR_VAL(action), Z_STRLEN_P(func));
             zend_string_release(controller);
-            zend_string_release(namespace_controller);
             zend_string_release(action);
-            zend_string_release(lc_action);
         } else {
             php_error(E_ERROR, "It can only be string or function in %s on %d ", __FILE__, __LINE__);
         }
@@ -123,6 +137,8 @@ ZEND_METHOD(lxx_application, __construct) {
 
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
     lxx_router_instance(&app->router);
+
+    lxx_response_instance(&app->response);
 
     lxx_loader_instance();
     zend_update_static_property(lxx_application_ce, ZEND_STRL(LXX_APPLICATION_APP), getThis());

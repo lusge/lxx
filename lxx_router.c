@@ -265,6 +265,11 @@ void lxx_router_set_action(zend_object *object, zend_string *action) {
     router->action = zend_string_copy(action);
 }
 
+zval *lxx_router_get_request(zend_object *object) {
+    lxx_router_t *router = lxx_router_fetch(object);
+    return &router->request;
+}
+
 ZEND_METHOD(lxx_router, __construct) {
     
 }

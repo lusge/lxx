@@ -19,6 +19,8 @@ void lxx_router_set_controller(zend_object *object, zend_string *controller);
 
 void lxx_router_set_action(zend_object *object, zend_string *action);
 
+zval *lxx_router_get_request(zend_object *object);
+
 LXX_MINIT_FUNCTION(router);
 
 #endif
