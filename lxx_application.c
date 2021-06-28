@@ -30,7 +30,7 @@ static zend_object *lxx_application_new(zend_class_entry *ce) {
     return &app->std;
 }
 
-static lxx_application_t *lxx_application_fetch(zend_object *object) {
+lxx_application_t *lxx_application_fetch(zend_object *object) {
     return (lxx_application_t *) ((char *) object - lxx_application_handlers.offset);
 }
 
@@ -56,15 +56,12 @@ static void lxx_application_call_function(lxx_application_t *app, zend_string *c
         zval class_object;
         zval ret;
         object_init_ex(&class_object, ce);
-        lxx_controller_set_router(Z_OBJ(class_object), &app->router);
-        zval *request = lxx_router_get_request(Z_OBJ(app->router));
-        lxx_controller_set_request(Z_OBJ(class_object), request);
         
         zend_call_method_with_0_params(&class_object, ce, NULL, "prepare", &ret);
         if (Z_TYPE(ret) == IS_STRING) {
             goto response_send;
         }
-        
+
         zval_ptr_dtor(&ret);
         zend_call_method(&class_object, ce, NULL, ZSTR_VAL(lc_action), ZSTR_LEN(lc_action), &ret, 0, NULL, NULL);
         
@@ -94,7 +91,7 @@ static void lxx_application_function_handle(zval *this) {
             zval retval;
             call_user_function(CG(function_table), NULL, func, &retval, 1, this);
             if (Z_TYPE(retval) == IS_STRING) {
-                zend_printf(" %s ", Z_STRVAL(retval));
+                lxx_response_send(Z_OBJ(app->response), Z_STRVAL(retval), Z_STRLEN(retval));
             }
             zval_ptr_dtor(&retval);
 
@@ -145,24 +142,26 @@ ZEND_METHOD(lxx_application, __construct) {
     }
 
     LXX_G(app_dir) = php_trim(dir, (char *)"/", sizeof("/")-1, 2);
-
-    zend_update_static_property(lxx_application_ce, ZEND_STRL(LXX_APPLICATION_APP), getThis());
-
+    
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
+
+    ZVAL_COPY(&LXX_G(app), getThis());
+
     lxx_router_instance(&app->router);
 
     lxx_response_instance(&app->response);
 
     lxx_loader_instance();
     lxx_application_load_router_file();
+
+    
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_application_app_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_METHOD(lxx_application, app) {
-    zval *app = zend_read_static_property(lxx_application_ce, ZEND_STRL(LXX_APPLICATION_APP), 1);
-    RETURN_ZVAL(app, 1, 0);
+    RETURN_ZVAL(&LXX_G(app), 1, 0);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_application_run_arginfo, 0, 0, 0)

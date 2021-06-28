@@ -8,6 +8,7 @@
 
 #include "php_lxx.h"
 #include "lxx_controller.h"
+#include "lxx_application.h"
 
 zend_class_entry *lxx_controller_ce;
 static zend_object_handlers lxx_controller_handlers;
@@ -31,26 +32,7 @@ static lxx_controller_t *lxx_controller_fetch(zend_object *object) {
 static void lxx_controller_free(zend_object *object) {
     lxx_controller_t *controller = lxx_controller_fetch(object);
 
-    zval_ptr_dtor(&controller->router);
-    zval_ptr_dtor(&controller->request);
-    zval_ptr_dtor(&controller->response);
-
     zend_object_std_dtor(object);
-}
-
-void lxx_controller_set_router(zend_object *object, zval *router) {
-    lxx_controller_t *controller = lxx_controller_fetch(object);
-    ZVAL_COPY(&controller->router, router);
-}
-
-void lxx_controller_set_request(zend_object *object, zval *request) {
-    lxx_controller_t *controller = lxx_controller_fetch(object);
-    ZVAL_COPY(&controller->request, request);
-}
-
-void lxx_controller_set_response(zend_object *object, zval *response) {
-    lxx_controller_t *controller = lxx_controller_fetch(object);
-    ZVAL_COPY(&controller->response, response);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_controller_Prepare_arginfo, 0, 0, 0)
@@ -70,8 +52,8 @@ ZEND_BEGIN_ARG_INFO_EX(lxx_controller_router_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_METHOD(lxx_controller, router) {
-    lxx_controller_t *controller = lxx_controller_fetch(Z_OBJ_P(getThis()));
-    RETURN_ZVAL(&controller->router, 0, 1);
+    lxx_application_t *app = LXXAPPOBJ();
+    RETURN_ZVAL(&app->router, 0, 1);
 }
 
 zend_function_entry lxx_controller_methods[] = {

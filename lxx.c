@@ -63,6 +63,8 @@ PHP_RSHUTDOWN_FUNCTION(lxx)
 	if (LXX_G(app_dir)) {
 		zend_string_release(LXX_G(app_dir));
 	}
+	
+	zval_ptr_dtor(&LXX_G(app));
     return SUCCESS;
 }
 
