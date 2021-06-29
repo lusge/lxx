@@ -14,6 +14,7 @@
 #include "lxx_router.h"
 #include "tools/lxx_radix_tree.h"
 #include "lxx_request.h"
+#include "lxx_application.h"
 
 zend_class_entry *lxx_router_ce;
 static zend_object_handlers lxx_router_handlers;
@@ -24,7 +25,6 @@ static zend_object *lxx_router_new(zend_class_entry *ce) {
     router->idx = -1;
 
     lxx_rax_tree_instance(&router->radix_tree);
-    lxx_request_instance(&router->request);
 
     ALLOC_HASHTABLE(router->routes);
     zend_hash_init(router->routes, 0, NULL, ZVAL_PTR_DTOR, 0);
@@ -58,7 +58,7 @@ static void lxx_router_free(zend_object *object) {
     }
 
     zval_ptr_dtor(&router->radix_tree);
-    zval_ptr_dtor(&router->request);
+    // zval_ptr_dtor(&router->request);
     zend_object_std_dtor(object);
 }
 
@@ -171,14 +171,15 @@ zval *lxx_router_match_router(zend_object *object) {
     pcre_cache_entry *pce_regexp;
 
     lxx_router_t *router = lxx_router_fetch(object);
+    lxx_application_t *app = LXXAPPOBJ();
 
-    method = lxx_request_get_method(Z_OBJ(router->request));
+    method = lxx_request_get_method(Z_OBJ(app->request));
     if (!method) {
         zend_string_release(method);
         return NULL;
     }
 
-    base_uri = lxx_request_get_base_uri(Z_OBJ(router->request));
+    base_uri = lxx_request_get_base_uri(Z_OBJ(app->request));
     if (!base_uri) {
         base_uri = zend_string_init("/", sizeof("/")-1, 0);
     }
@@ -249,7 +250,7 @@ zval *lxx_router_match_router(zend_object *object) {
         return func;
     }
     
-    lxx_request_set_params(Z_OBJ(router->request), &subparts);
+    lxx_request_set_params(Z_OBJ(app->request), &subparts);
     
     zval_ptr_dtor(&matches);
     zval_ptr_dtor(&subparts);
@@ -264,11 +265,6 @@ void lxx_router_set_controller(zend_object *object, zend_string *controller) {
 void lxx_router_set_action(zend_object *object, zend_string *action) {
     lxx_router_t *router = lxx_router_fetch(object);
     router->action = zend_string_copy(action);
-}
-
-zval *lxx_router_get_request(zend_object *object) {
-    lxx_router_t *router = lxx_router_fetch(object);
-    return &router->request;
 }
 
 ZEND_METHOD(lxx_router, __construct) {

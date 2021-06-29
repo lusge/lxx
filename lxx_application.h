@@ -9,6 +9,7 @@
 typedef struct {
     zval        router;
     zval        response;
+    zval        request;
     zend_object std;
 } lxx_application_t;
 

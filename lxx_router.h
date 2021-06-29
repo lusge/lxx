@@ -5,7 +5,6 @@ typedef struct {
     HashTable   *routes;
     zend_long   idx;
     zval        radix_tree;
-    zval        request;
     zend_string *controller;
     zend_string *action;
     zend_object std;

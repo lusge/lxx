@@ -9,6 +9,7 @@
 #include "php_lxx.h"
 #include "lxx_controller.h"
 #include "lxx_application.h"
+#include "lxx_router.h"
 
 zend_class_entry *lxx_controller_ce;
 static zend_object_handlers lxx_controller_handlers;
@@ -56,10 +57,17 @@ ZEND_METHOD(lxx_controller, router) {
     RETURN_ZVAL(&app->router, 0, 1);
 }
 
+ZEND_METHOD(lxx_controller, request) {
+    lxx_application_t *app = LXXAPPOBJ();
+    
+    RETURN_ZVAL(&app->request, 1, 0);
+}
+
 zend_function_entry lxx_controller_methods[] = {
     ZEND_ME(lxx_controller, Prepare, lxx_controller_Prepare_arginfo, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, After, lxx_controller_after_arginfo, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, router, lxx_controller_router_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_controller, request, NULL, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 
