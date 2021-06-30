@@ -174,12 +174,17 @@ ZEND_METHOD(lxx_request, setMethod) {
 }
 
 ZEND_METHOD(lxx_request, getParams) {
+    zval ret;
 
+    lxx_request_t *request = lxx_request_fetch(Z_OBJ_P(getThis()));
+
+    ZVAL_ARR(&ret, request->params);
+    RETURN_ZVAL(&ret, 0, 1);
 }
 
 
 static zend_function_entry lxx_request_methods[] = {
-
+    ZEND_ME(lxx_request, getParams, NULL, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 

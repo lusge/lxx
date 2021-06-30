@@ -6,6 +6,9 @@
 #include "ext/standard/info.h"
 #include "ext/standard/php_var.h"
 #include "main/SAPI.h"
+#include "ext/json/php_json.h"
+#include "Zend/zend_string.h"
+#include "Zend/zend_smart_str.h"
 
 #include "php_lxx.h"
 #include "lxx_response.h"
@@ -46,6 +49,10 @@ static void lxx_response_free(zend_object *object) {
     zend_object_std_dtor(object);
 }
 
+void lxx_response_instance(zval *this_ptr) {
+    object_init_ex(this_ptr, lxx_response_ce);
+}
+
 static void lxx_response_send_header(lxx_response_t *response) {
     zend_string *key;
     zval        *val;
@@ -55,6 +62,9 @@ static void lxx_response_send_header(lxx_response_t *response) {
     if (response->code) {
         SG(sapi_headers).http_response_code = response->code;
     }
+
+    zval rc;
+    ZVAL_ARR(&rc, response->header);
     
     ZEND_HASH_FOREACH_KEY_VAL(response->header, nkey, key, val) {
         if (key) {
@@ -68,14 +78,82 @@ static void lxx_response_send_header(lxx_response_t *response) {
             return;
         }
     } ZEND_HASH_FOREACH_END();
-}
-
-void lxx_response_instance(zval *this_ptr) {
-    object_init_ex(this_ptr, lxx_response_ce);
+    efree((char*)ctr.line);
 }
 
 void lxx_response_set_hader(zend_object *object, zend_string *key, zend_string *value) {
+    zval pData;
+    lxx_response_t *response = lxx_response_fetch(object);
     
+    ZVAL_STR_COPY(&pData, value);
+    zend_hash_add(response->header, key, &pData);
+}
+
+void lxx_response_json(zend_object *object, zval *arr) {
+    lxx_response_t *response = lxx_response_fetch(object);
+    zend_string *key;
+    zend_string *value;
+    key = zend_string_init("Content-type", sizeof("Content-type") - 1, 0);
+    value = zend_string_init("application/json", sizeof("application/json") - 1, 0);
+
+    lxx_response_set_hader(object, key, value);
+    lxx_response_send_header(response);
+
+    JSON_G(error_code) = PHP_JSON_ERROR_NONE;
+    JSON_G(encode_max_depth) = 512;
+
+    smart_str buf = { 0 };
+
+    php_json_encode(&buf, arr, PHP_JSON_UNESCAPED_UNICODE);
+
+    if (JSON_G(error_code) != PHP_JSON_ERROR_NONE && !(PHP_JSON_UNESCAPED_UNICODE & PHP_JSON_PARTIAL_OUTPUT_ON_ERROR))
+    {
+        smart_str_free(&buf);
+        return;
+    }
+    else
+    {
+        smart_str_0(&buf);
+        php_write(ZSTR_VAL(buf.s), ZSTR_LEN(buf.s));
+        smart_str_free(&buf);
+    }
+
+    zend_string_release(key);
+    zend_string_release(value);
+}
+
+void lxx_response_view(zend_object *object, zend_string *file, zval *arr) {
+
+}
+
+void lxx_response_text(zend_object *object, zend_string *text) {
+    lxx_response_t *response = lxx_response_fetch(object);
+    zend_string *key;
+    zend_string *value;
+    key = zend_string_init("Content-type", sizeof("Content-type") - 1, 0);
+    value = zend_string_init("text/plain", sizeof("text/plain") - 1, 0);
+
+    lxx_response_set_hader(object, key, value);
+    lxx_response_send_header(response);
+    php_write(ZSTR_VAL(text), ZSTR_LEN(text));
+
+    zend_string_release(key);
+    zend_string_release(value);
+}
+
+void lxx_response_html(zend_object *object, zend_string *html) {
+    lxx_response_t *response = lxx_response_fetch(object);
+    zend_string *key;
+    zend_string *value;
+    key = zend_string_init("Content-type", sizeof("Content-type") - 1, 0);
+    value = zend_string_init("text/html; charset=utf-8", sizeof("text/html; charset=utf-8") - 1, 0);
+
+    lxx_response_set_hader(object, key, value);
+    lxx_response_send_header(response);
+    php_write(ZSTR_VAL(html), ZSTR_LEN(html));
+
+    zend_string_release(key);
+    zend_string_release(value);
 }
 
 void lxx_response_send(zend_object *object, char *body, size_t len) {

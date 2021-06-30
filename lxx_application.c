@@ -55,24 +55,13 @@ static void lxx_application_call_function(lxx_application_t *app, zend_string *c
     
     if (ce) {
         zval class_object;
-        zval ret;
         object_init_ex(&class_object, ce);
         
-        zend_call_method_with_0_params(&class_object, ce, NULL, "prepare", &ret);
-        if (Z_TYPE(ret) == IS_STRING) {
-            goto response_send;
-        }
-
-        zval_ptr_dtor(&ret);
-        zend_call_method(&class_object, ce, NULL, ZSTR_VAL(lc_action), ZSTR_LEN(lc_action), &ret, 0, NULL, NULL);
+        zend_call_method_with_0_params(&class_object, ce, NULL, "prepare", NULL);
+        zend_call_method(&class_object, ce, NULL, ZSTR_VAL(lc_action), ZSTR_LEN(lc_action), NULL, 0, NULL, NULL);
         
-response_send:
-        if (Z_TYPE(ret) == IS_STRING) {
-            lxx_response_send(Z_OBJ(app->response), Z_STRVAL(ret), Z_STRLEN(ret));
-        }
         zend_call_method_with_0_params(&class_object, ce, NULL, "after", NULL);
         zval_ptr_dtor(&class_object);
-        zval_ptr_dtor(&ret);
     } else {
         zend_error_noreturn(E_ERROR, "Couldn't find controller and action");
     }

@@ -5,9 +5,13 @@ use Lxx\Controller;
 class Index extends Controller {
 
     public function Index() {
-        $str = "Controller is ".$this->router()->controller().", Action is ".$this->router()->action();
-        $request = $this->request();
-        var_dump($request);
-        return $str;
+        $str = "Controller is ".$this->getRouter()->controller().", Action is ".$this->getRouter()->action();
+        
+        $this->Text($str);
+    }
+
+    public function One() {
+
+        $this->Json(["key"=>"value"]);
     }
 }

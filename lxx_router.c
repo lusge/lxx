@@ -91,12 +91,19 @@ static zend_string *lxx_router_generating_regex(const char *path) {
     smart_str_appendl(&pattern, "#^", sizeof("#^") - 1);
     for (i = 0; i < l; i++) {
         if (path[i] == '*') {
-            smart_str_appendl(&pattern, "(?P<all>.*)", sizeof("(?P<all>.*)") -1);
+            smart_str_appendl(&pattern, "(?P<", sizeof("(?P<") - 1);
+            for (size_t j = i+1; j < l; j++) {
+                if (path[j] == '/') {
+                    break;
+                }
+                smart_str_appendc(&pattern, path[j]);
+            }
+            smart_str_appendl(&pattern, ">.*)", sizeof(">.*)") - 1);
             break;
         } else if (path[i] == '{') {
             smart_str_appendl(&pattern, "(?P<", sizeof("(?P<")-1);
         }else if (path[i] == '}') {
-			smart_str_appendl(&pattern, ">.+?)", sizeof(">.+?)")-1);
+			smart_str_appendl(&pattern, ">.+)", sizeof(">.+)")-1);
 		} else {
 			smart_str_appendc(&pattern, path[i]);
 		}
@@ -194,6 +201,7 @@ zval *lxx_router_match_router(zend_object *object) {
     new_path = zend_string_alloc(len, 0);
     memcpy(ZSTR_VAL(new_path), ZSTR_VAL(method), ZSTR_LEN(method));
     memcpy(ZSTR_VAL(new_path) + ZSTR_LEN(method), ZSTR_VAL(base_uri), ZSTR_LEN(base_uri));
+    ZSTR_VAL(new_path)[len] = '\0';
     
     idx = lxx_rax_tree_pre_seach(Z_OBJ(router->radix_tree), "<=", new_path);
     zend_string_release(method);
@@ -205,8 +213,7 @@ zval *lxx_router_match_router(zend_object *object) {
     }
 
     route = zend_hash_index_find(router->routes, idx);
-    // zend_printf(" idx is %ld <br>", idx);
-    // php_var_dump(route, 2);
+    
     zval *regexp = zend_hash_str_find(Z_ARR_P(route), "reg", sizeof("reg") - 1);
     zval *key = zend_hash_str_find(Z_ARR_P(route), "key", sizeof("key") - 1);
     zval *func = zend_hash_str_find(Z_ARR_P(route), "func", sizeof("func") - 1);
@@ -218,7 +225,7 @@ zval *lxx_router_match_router(zend_object *object) {
     
     // php_var_dump(route, 2);
     char *regexp_path = ZSTR_VAL(new_path) + Z_STRLEN_P(key);
-    size_t rlen = ZSTR_LEN(new_path) - Z_STRLEN_P(key);
+    size_t rlen = strlen(regexp_path);
 
     if (rlen <= 0) {
         zend_string_release(new_path);

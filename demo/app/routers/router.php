@@ -2,9 +2,7 @@
 
 $router = Lxx\Application::app()->router();
 
-$router->get("/user/b/c/*action", function(){
-    echo "Hello 11!\n";
-});
+$router->get("/user/b/c/*action", "Index@One");
 
 $router->get("/user/member/{id}", function(){
     echo "Hello 22!\n";
@@ -18,7 +16,7 @@ $router->post("/user/b/{a}", function(){
     echo "Hello 44!\n";
 });
 
-$router->get("/a-{a}", "Index@Index");
+$router->get("/a-{abc}", "Index@Index");
 
 // $router->get("/a-{a}", function(){
 //     echo "Hello 55!\n";
