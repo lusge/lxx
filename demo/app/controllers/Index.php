@@ -14,4 +14,8 @@ class Index extends Controller {
 
         $this->Json(["key"=>"value"]);
     }
+
+    public function Two() {
+        $this->view("index/two", ["name"=> "Two"]);
+    }
 }

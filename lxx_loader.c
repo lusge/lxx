@@ -56,12 +56,17 @@ int lxx_loader_include(zend_string *filename, zval *retval) {
         zend_error(E_ERROR, "Failed opening template %s: %s", ZSTR_VAL(filename), strerror(errno));
 		return 0;
 	}
-
+    
+#if PHP_VERSION_ID < 70400
 	file_handle.filename = ZSTR_VAL(filename);
 	file_handle.free_filename = 0;
 	file_handle.type = ZEND_HANDLE_FILENAME;
 	file_handle.opened_path = NULL;
 	file_handle.handle.fp = NULL;
+#else
+	/* setup file-handle */
+	zend_stream_init_filename(&file_handle, tpl);
+#endif
 
 	op_array = zend_compile_file(&file_handle, ZEND_INCLUDE);
 

@@ -4,9 +4,7 @@ $router = Lxx\Application::app()->router();
 
 $router->get("/user/b/c/*action", "Index@One");
 
-$router->get("/user/member/{id}", function(){
-    echo "Hello 22!\n";
-});
+$router->get("/user/member/{id}", "Index@Two");
 
 $router->get("/user/b/{a}/{id}", function($app){
     return "Hello 33!\n";

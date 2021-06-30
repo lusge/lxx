@@ -96,6 +96,17 @@ ZEND_METHOD(lxx_controller, Json) {
     lxx_response_json(Z_OBJ(app->response), arr);
 }
 
+ZEND_METHOD(lxx_controller, View) {
+    zend_string *filename;
+    zval *arr = NULL;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|a", &filename, &arr) == FAILURE) {
+        return;
+    }
+
+    lxx_application_t *app = LXXAPPOBJ();
+    lxx_response_view(Z_OBJ(app->response), filename, arr);
+}
+
 zend_function_entry lxx_controller_methods[] = {
     ZEND_ME(lxx_controller, Prepare, lxx_controller_Prepare_arginfo, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, After, lxx_controller_after_arginfo, ZEND_ACC_PUBLIC)
@@ -104,6 +115,7 @@ zend_function_entry lxx_controller_methods[] = {
     ZEND_ME(lxx_controller, Text, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, Html, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, Json, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_controller, View, NULL, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 
