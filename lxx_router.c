@@ -364,5 +364,7 @@ LXX_MINIT_FUNCTION(router) {
     lxx_router_handlers.offset = XtOffsetOf(lxx_router_t, std);
     lxx_router_handlers.free_obj = lxx_router_free;
 
+
+    LXX_STARTUP(raxTree);
     return SUCCESS;
 }

@@ -9,13 +9,13 @@
 #include "php_lxx.h"
 
 #include "lxx_router.h"
-#include "tools/lxx_radix_tree.h"
 #include "lxx_request.h"
 #include "lxx_application.h"
 #include "lxx_config.h"
 #include "lxx_controller.h"
 #include "lxx_loader.h"
 #include "lxx_response.h"
+#include "lxx_exception.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(lxx);
 
@@ -31,8 +31,8 @@ PHP_MINIT_FUNCTION(lxx)
 	LXX_STARTUP(loader);
 	LXX_STARTUP(response);
 	LXX_STARTUP(request);
-	LXX_STARTUP(raxTree);
 	LXX_STARTUP(router);
+	LXX_STARTUP(exception);
 	return SUCCESS;
 }
 
