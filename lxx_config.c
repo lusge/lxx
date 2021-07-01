@@ -34,6 +34,10 @@ static void lxx_config_free(zend_object *object) {
     zend_object_std_dtor(object);
 }
 
+void lxx_config_instance(zval *this_ptr) {
+    object_init_ex(this_ptr, lxx_config_ce);
+}
+
 zend_function_entry lxx_config_methods[] = {
 
     ZEND_FE_END

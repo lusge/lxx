@@ -3,8 +3,11 @@
 
 
 typedef struct {
+    HashTable   *config;
     zend_object std;
 } lxx_config_t;
+
+void lxx_config_instance(zval *this_ptr);
 
 LXX_MINIT_FUNCTION(config);
 #endif

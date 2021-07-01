@@ -15,6 +15,7 @@
 #include "lxx_controller.h"
 #include "lxx_response.h"
 #include "lxx_request.h"
+#include "lxx_config.h"
 
 zend_class_entry *lxx_application_ce;
 static zend_object_handlers lxx_application_handlers;
@@ -41,6 +42,7 @@ static void lxx_application_free(zend_object *object) {
     zval_ptr_dtor(&app->router);
     zval_ptr_dtor(&app->response);
     zval_ptr_dtor(&app->request);
+    zval_ptr_dtor(&app->config);
     zend_object_std_dtor(object);
 }
 
@@ -136,16 +138,13 @@ ZEND_METHOD(lxx_application, __construct) {
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
 
     ZVAL_COPY(&LXX_G(app), getThis());
+    lxx_application_load_router_file();
 
     lxx_request_instance(&app->request);
     lxx_router_instance(&app->router);
-
     lxx_response_instance(&app->response);
-
     lxx_loader_instance();
-    lxx_application_load_router_file();
-
-    
+    lxx_config_instance($app->config);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_application_app_arginfo, 0, 0, 0)
