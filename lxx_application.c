@@ -138,13 +138,13 @@ ZEND_METHOD(lxx_application, __construct) {
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
 
     ZVAL_COPY(&LXX_G(app), getThis());
-    lxx_application_load_router_file();
 
-    lxx_request_instance(&app->request);
     lxx_router_instance(&app->router);
+    lxx_request_instance(&app->request);
     lxx_response_instance(&app->response);
     lxx_loader_instance();
-    lxx_config_instance($app->config);
+    lxx_config_instance(&app->config);
+    lxx_application_load_router_file();
 }
 
 ZEND_BEGIN_ARG_INFO_EX(lxx_application_app_arginfo, 0, 0, 0)

@@ -16,6 +16,8 @@ class Index extends Controller {
     }
 
     public function Two() {
+        $db = \Lxx\Database::table("User");
+        var_dump($db);
         $this->view("index/two", ["name"=> "Two"]);
     }
 }

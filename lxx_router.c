@@ -5,8 +5,8 @@
 #include "php.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_var.h"
-#include "Zend/zend_smart_str.h" /* for smart_str */
-#include "Zend/zend_interfaces.h" /* for zend_class_serialize_deny */
+#include "Zend/zend_smart_str.h" 
+#include "Zend/zend_interfaces.h" 
 #include "ext/standard/php_string.h"
 #include "ext/pcre/php_pcre.h"
 
