@@ -49,6 +49,10 @@ static void lxx_request_free(zend_object *object) {
         }
     }
 
+    if (request->method) {
+        zend_string_release(request->method);
+    }
+
     zend_object_std_dtor(object);
 }
 
@@ -70,7 +74,7 @@ zend_string *lxx_request_get_method(zend_object *object) {
     lxx_request_t *request = lxx_request_fetch(object);
 
     if (request->method) {
-        return request->method;
+        return zend_string_copy(request->method);
     }
 
     if (SG(request_info).request_method) {
@@ -81,7 +85,17 @@ zend_string *lxx_request_get_method(zend_object *object) {
         request->method = zend_string_init("UNKNOW", sizeof("UNKNOW") - 1, 0);
     }
 
-    return request->method;
+    return zend_string_copy(request->method);
+}
+
+void lxx_request_set_method(zend_object *object, zend_string *method) {
+    lxx_request_t *request = lxx_request_fetch(object);
+
+    if (request->method) {
+        zend_string_release(request->method);
+    }
+
+    request->method = zend_string_copy(method);
 }
 
 zend_string *lxx_request_get_base_uri(zend_object *object) {
@@ -107,6 +121,14 @@ zend_string *lxx_request_get_base_uri(zend_object *object) {
 	}
 
 	return zend_string_copy(request->base_uri);
+}
+
+void lxx_request_set_base_uri(zend_object *object, zend_string *baseUri) {
+    lxx_request_t *request = lxx_request_fetch(object);
+    if (request->base_uri) {
+        zend_string_release(request->base_uri);
+    }
+    request->base_uri = zend_string_copy(baseUri);
 }
 
 zend_string *lxx_request_get_request_uri(zend_object *object) {
@@ -143,22 +165,28 @@ void lxx_request_set_params(zend_object *object, zval *subparts) {
         Z_ADDREF_P(val);
         zend_hash_update(request->params, key, val);
     } ZEND_HASH_FOREACH_END();
-
-    // zval *p;
-    // ZVAL_ARR(p, request->params);
-    // php_var_dump(p,2);
 }
 
 ZEND_METHOD(lxx_request, getBaseUri) {
+    zend_string *baseUri;
 
+    baseUri = lxx_request_get_base_uri(THIS_P);
+
+    RETURN_STR(baseUri);
 }
 
 ZEND_METHOD(lxx_request, setBaseUri) {
+    zend_string *baseUri;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &baseUri) == FAILURE) {
+        return;
+    }
 
+    lxx_request_set_base_uri(THIS_P, baseUri);
 }
 
 ZEND_METHOD(lxx_request, getQueryUri) {
-
+    zend_string *uri = lxx_request_get_request_uri(THIS_P);
+    RETURN_STR(uri);
 }
 
 ZEND_METHOD(lxx_request, setQueryUri) {
@@ -166,25 +194,56 @@ ZEND_METHOD(lxx_request, setQueryUri) {
 }
 
 ZEND_METHOD(lxx_request, getMethod) {
-
+    zend_string *method = lxx_request_get_method(THIS_P);
+    RETURN_STR(method);
 }
 
 ZEND_METHOD(lxx_request, setMethod) {
+    zend_string *method;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &method) == FAILURE) {
+        return;
+    }
 
+    lxx_request_set_method(THIS_P, method);
 }
 
 ZEND_METHOD(lxx_request, getParams) {
     zval ret;
 
-    lxx_request_t *request = lxx_request_fetch(Z_OBJ_P(getThis()));
+    lxx_request_t *request = lxx_request_fetch(THIS_P);
 
     ZVAL_ARR(&ret, request->params);
     RETURN_ZVAL(&ret, 0, 1);
 }
 
+ZEND_METHOD(lxx_request, getParam) {
+    zend_string *name;
+    zval *val;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &name) == FAILURE) {
+        return;
+    }
+
+    lxx_request_t *request = lxx_request_fetch(THIS_P);
+
+    val = zend_hash_find(request->params, name);
+    if (val) {
+        RETURN_ZVAL(val, 1, 0);
+    }
+
+    RETURN_NULL();
+}
+
 
 static zend_function_entry lxx_request_methods[] = {
+    ZEND_ME(lxx_request, getBaseUri, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_request, setBaseUri, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_request, getQueryUri, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_request, setQueryUri, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_request, getMethod, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_request, setMethod, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_request, getParams, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_request, getParam, NULL, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 

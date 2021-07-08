@@ -12,7 +12,9 @@ typedef struct {
 void lxx_request_instance(zval *this_ptr);
 zval *lxx_request_get_server(char *key, size_t len);
 zend_string *lxx_request_get_method(zend_object *object);
+void lxx_request_set_method(zend_object *object, zend_string *method);
 zend_string *lxx_request_get_base_uri(zend_object *object);
+void lxx_request_set_base_uri(zend_object *object, zend_string *baseUri);
 zend_string *lxx_request_get_request_uri(zend_object *object);
 
 void lxx_request_set_params(zend_object *object, zval *params);

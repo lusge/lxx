@@ -34,3 +34,6 @@ tests/*/*.php
 tests/*/*.exp
 tests/*/*.log
 tests/*/*.sh
+demo/vendor/*
+demo/composer.lock
+demo/app/models/*

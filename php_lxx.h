@@ -11,6 +11,8 @@ extern zend_module_entry lxx_module_entry;
 #define LXX_STARTUP(module)                 ZEND_MODULE_STARTUP_N(lxx_##module)(INIT_FUNC_ARGS_PASSTHRU)
 #define LXX_MINIT_FUNCTION(module)          ZEND_MINIT_FUNCTION(lxx_##module)
 
+#define THIS_P								Z_OBJ_P(getThis())
+
 
 ZEND_BEGIN_MODULE_GLOBALS(lxx)
 	zend_string *app_dir;

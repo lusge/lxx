@@ -3,6 +3,7 @@
 
 #define LXX_APPLICATION_APP         "app"
 #define LXX_APPLICATION_ROUTE_DIR   "/routers/router.php"
+#define LXX_APPLICATION_VENDOR_DIR  "/../vendor/autoload.php"
 
 #define LXXAPPOBJ()           (lxx_application_fetch(Z_OBJ(LXX_G(app))))
 

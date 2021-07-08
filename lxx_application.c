@@ -122,9 +122,35 @@ static void lxx_application_load_router_file() {
     zend_string_release(router_dir);
 }
 
-ZEND_BEGIN_ARG_INFO_EX(lxx_application_ctor_arginfo, 0, 0, 1)
-    ZEND_ARG_INFO(0, dir)
-ZEND_END_ARG_INFO()
+static void lxx_application_loader_vendor_autoload_file() {
+    size_t len = ZSTR_LEN(LXX_G(app_dir)) + (sizeof(LXX_APPLICATION_VENDOR_DIR) - 1);
+    zend_string *vendor_dir = zend_string_alloc(len , 0);
+    memcpy(ZSTR_VAL(vendor_dir), ZSTR_VAL(LXX_G(app_dir)), ZSTR_LEN(LXX_G(app_dir)));
+    memcpy(ZSTR_VAL(vendor_dir) + ZSTR_LEN(LXX_G(app_dir)), LXX_APPLICATION_VENDOR_DIR, sizeof(LXX_APPLICATION_VENDOR_DIR) - 1);
+    ZSTR_VAL(vendor_dir)[len] = '\0';
+
+    char realpath[MAXPATHLEN];
+    
+	if (!VCWD_REALPATH(ZSTR_VAL(vendor_dir), realpath)) {
+        zend_string_release(vendor_dir);
+        return;
+    }
+    lxx_loader_include(vendor_dir, NULL);
+    zend_string_release(vendor_dir);
+}
+
+static void lxx_application_bootstrap() {
+    zend_string *boot = zend_string_init("Bootstrap", sizeof("Bootstrap") - 1, 0);
+    zend_class_entry *ce = zend_lookup_class(boot);
+    if (ce) {
+        zval obj;
+        object_init_ex(&obj, ce);
+        zend_call_method_with_0_params(&obj, ce, NULL, "init", NULL);
+        zval_ptr_dtor(&obj);
+    }
+
+    zend_string_release(boot);
+}
 
 ZEND_METHOD(lxx_application, __construct) {
     zend_string *dir;
@@ -144,36 +170,57 @@ ZEND_METHOD(lxx_application, __construct) {
     lxx_response_instance(&app->response);
     lxx_loader_instance();
     lxx_config_instance(&app->config);
-    lxx_application_load_router_file();
-}
 
-ZEND_BEGIN_ARG_INFO_EX(lxx_application_app_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
+    lxx_application_load_router_file();
+    lxx_application_loader_vendor_autoload_file();
+}
 
 ZEND_METHOD(lxx_application, app) {
     RETURN_ZVAL(&LXX_G(app), 1, 0);
 }
 
-ZEND_BEGIN_ARG_INFO_EX(lxx_application_run_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
 ZEND_METHOD(lxx_application, run) {
+    lxx_application_bootstrap();
     lxx_application_function_handle(getThis()); 
 }
 
-ZEND_BEGIN_ARG_INFO_EX(lxx_application_router_arginfo, 0, 0, 0)
-ZEND_END_ARG_INFO()
 
-ZEND_METHOD(lxx_application, router) {
+
+ZEND_METHOD(lxx_application, getRouter) {
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
     RETURN_ZVAL(&app->router, 1, 0);
 }
 
+ZEND_METHOD(lxx_application, getRequest) {
+    lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
+    RETURN_ZVAL(&app->request, 1, 0);
+}
+
+ZEND_METHOD(lxx_application, getConfig) {
+    lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
+    RETURN_ZVAL(&app->config, 1, 0);
+}
+
+ZEND_METHOD(lxx_application, getResponse) {
+    lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
+    RETURN_ZVAL(&app->response, 1, 0);
+}
+
+ZEND_BEGIN_ARG_INFO_EX(lxx_application_ctor_arginfo, 0, 0, 1)
+    ZEND_ARG_INFO(0, dir)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(lxx_application_null_arginfo, 0, 0, 0)
+ZEND_END_ARG_INFO()
+
 zend_function_entry lxx_application_methods[] = {
     ZEND_ME(lxx_application, __construct, lxx_application_ctor_arginfo, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_application, app, lxx_application_app_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    ZEND_ME(lxx_application, run, lxx_application_run_arginfo, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_application, router, lxx_application_router_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, app, lxx_application_null_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    ZEND_ME(lxx_application, run, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, getRouter, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, getRequest, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, getConfig, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, getResponse, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 

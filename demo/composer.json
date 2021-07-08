@@ -1,0 +1,5 @@
+{
+    "require": {
+        "lloydzhou/activerecord": "^2.1"
+    }
+}
