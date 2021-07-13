@@ -6,7 +6,7 @@ return [
         "dbname" => "blog",
         "host" => "localhost",
         "user" => "root",
-        "password" => "furui2017",
+        "password" => "",
         "charset" => "utf8mb4",
         "prefix" => "",
         "port" => 3306
