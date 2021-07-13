@@ -1,34 +1,3 @@
-/* Rax -- A radix tree implementation.
- *
- * Version 1.2 -- 7 February 2019
- *
- * Copyright (c) 2017-2019, Salvatore Sanfilippo <antirez at gmail dot com>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *   * Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *   * Neither the name of Redis nor the names of its contributors may be used
- *     to endorse or promote products derived from this software without
- *     specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
 
 #include <stdlib.h>
 #include <string.h>
@@ -44,20 +13,14 @@
 
 #include RAX_MALLOC_INCLUDE
 
-/* This is a special pointer that is guaranteed to never have the same value
- * of a radix tree node. It's used in order to report "not found" error without
- * requiring the function to have multiple return values. */
+
 void *raxNotFound = (void*)"rax-not-found-pointer";
 
 /* -------------------------------- Debugging ------------------------------ */
 
 void raxDebugShowNode(const char *msg, raxNode *n);
 
-/* Turn debugging messages on/off by compiling with RAX_DEBUG_MSG macro on.
- * When RAX_DEBUG_MSG is defined by default Rax operations will emit a lot
- * of debugging info to the standard output, however you can still turn
- * debugging on/off in order to enable it only when you suspect there is an
- * operation causing a bug using the function raxSetDebugMsg(). */
+
 #ifdef RAX_DEBUG_MSG
 #define debugf(...)                                                            \
     if (raxDebugMsg) {                                                         \
@@ -75,22 +38,11 @@ void raxDebugShowNode(const char *msg, raxNode *n);
 /* By default log debug info if RAX_DEBUG_MSG is defined. */
 static int raxDebugMsg = 1;
 
-/* When debug messages are enabled, turn them on/off dynamically. By
- * default they are enabled. Set the state to 0 to disable, and 1 to
- * re-enable. */
 void raxSetDebugMsg(int onoff) {
     raxDebugMsg = onoff;
 }
 
-/* ------------------------- raxStack functions --------------------------
- * The raxStack is a simple stack of pointers that is capable of switching
- * from using a stack-allocated array to dynamic heap once a given number of
- * items are reached. It is used in order to retain the list of parent nodes
- * while walking the radix tree in order to implement certain operations that
- * need to navigate the tree upward.
- * ------------------------------------------------------------------------- */
 
-/* Initialize the stack. */
 static inline void raxStackInit(raxStack *ts) {
     ts->stack = ts->static_items;
     ts->items = 0;
@@ -126,16 +78,12 @@ static inline int raxStackPush(raxStack *ts, void *ptr) {
     return 1;
 }
 
-/* Pop an item from the stack, the function returns NULL if there are no
- * items to pop. */
 static inline void *raxStackPop(raxStack *ts) {
     if (ts->items == 0) return NULL;
     ts->items--;
     return ts->stack[ts->items];
 }
 
-/* Return the stack item at the top of the stack without actually consuming
- * it. */
 static inline void *raxStackPeek(raxStack *ts) {
     if (ts->items == 0) return NULL;
     return ts->stack[ts->items-1];
@@ -146,18 +94,10 @@ static inline void raxStackFree(raxStack *ts) {
     if (ts->stack != ts->static_items) rax_free(ts->stack);
 }
 
-/* ----------------------------------------------------------------------------
- * Radix tree implementation
- * --------------------------------------------------------------------------*/
 
-/* Return the padding needed in the characters section of a node having size
- * 'nodesize'. The padding is needed to store the child pointers to aligned
- * addresses. Note that we add 4 to the node size because the node has a four
- * bytes header. */
 #define raxPadding(nodesize) ((sizeof(void*)-((nodesize+4) % sizeof(void*))) & (sizeof(void*)-1))
 
-/* Return the pointer to the last child pointer in a node. For the compressed
- * nodes this is the only child pointer. */
+
 #define raxNodeLastChildPtr(n) ((raxNode**) ( \
     ((char*)(n)) + \
     raxNodeCurrentLength(n) - \
@@ -171,9 +111,7 @@ static inline void raxStackFree(raxStack *ts) {
     (n)->size + \
     raxPadding((n)->size)))
 
-/* Return the current total size of the node. Note that the second line
- * computes the padding after the string of characters, needed in order to
- * save pointers to aligned addresses. */
+
 #define raxNodeCurrentLength(n) ( \
     sizeof(raxNode)+(n)->size+ \
     raxPadding((n)->size)+ \
@@ -181,10 +119,6 @@ static inline void raxStackFree(raxStack *ts) {
     (((n)->iskey && !(n)->isnull)*sizeof(void*)) \
 )
 
-/* Allocate a new non compressed node with the specified number of children.
- * If datafiled is true, the allocation is made large enough to hold the
- * associated data pointer.
- * Returns the new node pointer. On out of memory NULL is returned. */
 raxNode *raxNewNode(size_t children, int datafield) {
     size_t nodesize = sizeof(raxNode)+children+raxPadding(children)+
                       sizeof(raxNode*)*children;
@@ -198,8 +132,6 @@ raxNode *raxNewNode(size_t children, int datafield) {
     return node;
 }
 
-/* Allocate a new rax and return its pointer. On out of memory the function
- * returns NULL. */
 rax *raxNew(void) {
     rax *rax = rax_malloc(sizeof(*rax));
     if (rax == NULL) return NULL;

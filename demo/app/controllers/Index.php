@@ -10,8 +10,8 @@ class Index extends Controller {
     }
 
     public function One() {
-
-        $this->Json(["key"=>"value"]);
+        $value = $this->getRequest()->getParam("name");
+        $this->Json(['name'=>$value]);
     }
 
     public function Two() {

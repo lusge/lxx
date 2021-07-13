@@ -29,6 +29,9 @@ static zend_object *lxx_router_new(zend_class_entry *ce) {
     ALLOC_HASHTABLE(router->routes);
     zend_hash_init(router->routes, 0, NULL, ZVAL_PTR_DTOR, 0);
 
+    ALLOC_HASHTABLE(router->paths);
+    zend_hash_init(router->paths, 0, NULL, ZVAL_PTR_DTOR, 0);
+
     zend_object_std_init(&router->std, ce);
     router->std.handlers = &lxx_router_handlers;
 
@@ -46,6 +49,13 @@ static void lxx_router_free(zend_object *object) {
 		if (GC_DELREF(router->routes) == 0) {
 			GC_REMOVE_FROM_BUFFER(router->routes);
 			zend_array_destroy(router->routes);
+		}
+	}
+
+    if (router->paths) {
+		if (GC_DELREF(router->paths) == 0) {
+			GC_REMOVE_FROM_BUFFER(router->paths);
+			zend_array_destroy(router->paths);
 		}
 	}
 
@@ -147,6 +157,8 @@ static void lxx_router_add_router(INTERNAL_FUNCTION_PARAMETERS, const char *meth
         key = zend_string_init(ZSTR_VAL(new_path), spos - ZSTR_VAL(new_path), 0);
     } else {
         key = zend_string_init(ZSTR_VAL(new_path), ZSTR_LEN(new_path), 0);
+        zend_hash_update(router->paths, key, func);
+        goto release;
     }
 
     reg_str = lxx_router_generating_regex(ZSTR_VAL(new_path) + ZSTR_LEN(key));
@@ -164,9 +176,11 @@ static void lxx_router_add_router(INTERNAL_FUNCTION_PARAMETERS, const char *meth
     zend_hash_str_add(Z_ARR(pData), "func", sizeof("func") - 1, &t);
 
     lxx_router_insert_router(router, key,  &pData);
+    zend_string_release(reg_str);
+
+release:
     zend_string_release(new_path);
     zend_string_release(key);
-    zend_string_release(reg_str);
 }
 
 zval *lxx_router_match_router(zend_object *object) {
@@ -203,6 +217,15 @@ zval *lxx_router_match_router(zend_object *object) {
     memcpy(ZSTR_VAL(new_path) + ZSTR_LEN(method), ZSTR_VAL(base_uri), ZSTR_LEN(base_uri));
     ZSTR_VAL(new_path)[len] = '\0';
     
+    zval *pfunc = zend_hash_find(router->paths, new_path);
+    if (pfunc) {
+        zend_string_release(method);
+        zend_string_release(base_uri);
+        zend_string_release(new_path);
+        return pfunc;
+    }
+
+    // zend_printf(" new sssss %s \n", new_path->val);
     idx = lxx_rax_tree_pre_seach(Z_OBJ(router->radix_tree), "<=", new_path);
     zend_string_release(method);
     zend_string_release(base_uri);

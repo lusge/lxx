@@ -107,7 +107,7 @@ static void lxx_application_function_handle(zval *this) {
             php_error(E_ERROR, "It can only be string or function in %s on %d ", __FILE__, __LINE__);
         }
     } else {
-        php_error(E_ERROR, "Function not found in %s on %d ", __FILE__, __LINE__);
+        php_error(E_ERROR, "Function not found in %s on %d line", __FILE__, __LINE__);
     } 
 }
 

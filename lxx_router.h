@@ -3,6 +3,7 @@
 
 typedef struct {
     HashTable   *routes;
+    HashTable   *paths;
     zend_long   idx;
     zval        radix_tree;
     zend_string *controller;

@@ -37,3 +37,4 @@ tests/*/*.sh
 demo/vendor/*
 demo/composer.lock
 demo/app/models/*
+.DS_Store
