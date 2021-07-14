@@ -19,3 +19,6 @@ $/path/to/phpize
 $./configure
 $make && make install
 ```
+
+# 3.文档
+[doc](doc/SUMMARY.md)
