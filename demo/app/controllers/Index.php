@@ -8,14 +8,4 @@ class Index extends Controller {
         $str = "Hello Lxx framework";
         $this->Text($str );
     }
-
-    public function One() {
-        $value = $this->Request()->getParam("name");
-        $this->Json(['name'=>$value]);
-    }
-
-    public function Two() {
-        
-        $this->view("index/two", ["name"=> "Two"]);
-    }
 }
