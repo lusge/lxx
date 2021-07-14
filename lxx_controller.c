@@ -53,12 +53,12 @@ ZEND_METHOD(lxx_controller, After) {
 ZEND_BEGIN_ARG_INFO_EX(lxx_controller_router_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_METHOD(lxx_controller, getRouter) {
+ZEND_METHOD(lxx_controller, Router) {
     lxx_application_t *app = LXXAPPOBJ();
     RETURN_ZVAL(&app->router, 0, 1);
 }
 
-ZEND_METHOD(lxx_controller, getRequest) {
+ZEND_METHOD(lxx_controller, Request) {
     lxx_application_t *app = LXXAPPOBJ();
     
     RETURN_ZVAL(&app->request, 1, 0);
@@ -110,8 +110,8 @@ ZEND_METHOD(lxx_controller, View) {
 zend_function_entry lxx_controller_methods[] = {
     ZEND_ME(lxx_controller, Prepare, lxx_controller_Prepare_arginfo, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, After, lxx_controller_after_arginfo, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_controller, getRouter, lxx_controller_router_arginfo, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_controller, getRequest, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_controller, Router, lxx_controller_router_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_controller, Request, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, Text, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, Html, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_controller, Json, NULL, ZEND_ACC_PUBLIC)

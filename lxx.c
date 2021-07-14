@@ -16,6 +16,8 @@
 #include "lxx_loader.h"
 #include "lxx_response.h"
 #include "lxx_exception.h"
+#include "lxx_cookie.h"
+#include "lxx_session.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(lxx);
 
@@ -33,6 +35,8 @@ PHP_MINIT_FUNCTION(lxx)
 	LXX_STARTUP(request);
 	LXX_STARTUP(router);
 	LXX_STARTUP(exception);
+	LXX_STARTUP(cookie);
+	LXX_STARTUP(session);
 	return SUCCESS;
 }
 

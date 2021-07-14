@@ -390,5 +390,6 @@ LXX_MINIT_FUNCTION(router) {
 
 
     LXX_STARTUP(raxTree);
+    
     return SUCCESS;
 }
