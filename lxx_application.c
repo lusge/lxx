@@ -43,6 +43,7 @@ static void lxx_application_free(zend_object *object) {
     zval_ptr_dtor(&app->response);
     zval_ptr_dtor(&app->request);
     zval_ptr_dtor(&app->config);
+
     zend_object_std_dtor(object);
 }
 

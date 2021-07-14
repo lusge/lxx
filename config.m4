@@ -18,9 +18,7 @@ if test "$PHP_LXX" != "no"; then
   lxx_response.c  \
   lxx_loader.c  \
   lxx_config.c  \
-  lxx_exception.c \
-  lxx_cookie.c  \
-  lxx_session.c,
+  lxx_exception.c,
   $ext_shared)
   
   dnl ,,, cxx)
