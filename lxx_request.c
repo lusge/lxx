@@ -22,6 +22,7 @@ static zend_object *lxx_request_new(zend_class_entry *ce) {
     zend_hash_init(request->params, 0, NULL, ZVAL_PTR_DTOR, 0);
 
     zend_object_std_init(&request->std, ce);
+    object_properties_init(&request->std, ce);
     request->std.handlers = &lxx_request_handlers;
 
     return &request->std;

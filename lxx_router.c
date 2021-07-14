@@ -33,6 +33,7 @@ static zend_object *lxx_router_new(zend_class_entry *ce) {
     zend_hash_init(router->paths, 0, NULL, ZVAL_PTR_DTOR, 0);
 
     zend_object_std_init(&router->std, ce);
+    object_properties_init(&router->std, ce);
     router->std.handlers = &lxx_router_handlers;
 
     return &router->std;

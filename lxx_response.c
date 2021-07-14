@@ -28,6 +28,7 @@ static zend_object *lxx_response_new(zend_class_entry *ce) {
     response->code = 200;
 
     zend_object_std_init(&response->std, ce);
+	object_properties_init(&response->std, ce);
     response->std.handlers = &lxx_response_handlers;
 
     return &response->std;

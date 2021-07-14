@@ -20,8 +20,8 @@ static zend_object *lxx_controller_new(zend_class_entry *ce) {
     lxx_controller_t *controller = emalloc(sizeof(lxx_controller_t) + zend_object_properties_size(ce));
     memset(controller, 0, XtOffsetOf(lxx_controller_t, std));
 
-
     zend_object_std_init(&controller->std, ce);
+    object_properties_init(&controller->std, ce);
     controller->std.handlers = &lxx_controller_handlers;
 
     return &controller->std;
@@ -124,6 +124,7 @@ LXX_MINIT_FUNCTION(controller) {
     INIT_CLASS_ENTRY(ce, "Lxx\\Controller", lxx_controller_methods);
     lxx_controller_ce = zend_register_internal_class(&ce);
     lxx_controller_ce->create_object = lxx_controller_new;
+    lxx_controller_ce->ce_flags |= ZEND_ACC_EXPLICIT_ABSTRACT_CLASS;
 
     memcpy(&lxx_controller_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
     lxx_controller_handlers.offset = XtOffsetOf(lxx_controller_t, std);

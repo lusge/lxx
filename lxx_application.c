@@ -25,8 +25,8 @@ static zend_object *lxx_application_new(zend_class_entry *ce) {
     lxx_application_t *app = emalloc(sizeof(lxx_application_t) + zend_object_properties_size(ce));
     memset(app, 0, XtOffsetOf(lxx_application_t, std));
 
-
     zend_object_std_init(&app->std, ce);
+    object_properties_init(&app->std, ce);
     app->std.handlers = &lxx_application_handlers;
 
     return &app->std;

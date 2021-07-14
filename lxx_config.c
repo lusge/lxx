@@ -22,6 +22,8 @@ static zend_object *lxx_config_new(zend_class_entry *ce) {
     zend_hash_init(config->config, 0, NULL, ZVAL_PTR_DTOR, 0);
 
     zend_object_std_init(&config->std, ce);
+    object_properties_init(&config->std, ce);
+
     config->std.handlers = &lxx_config_handlers;
 
     return &config->std;

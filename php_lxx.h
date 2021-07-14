@@ -13,6 +13,24 @@ extern zend_module_entry lxx_module_entry;
 
 #define THIS_P								Z_OBJ_P(getThis())
 
+#if PHP_VERSION_ID < 70400
+#define LXX_WRITE_HANDLER       void
+#define LXX_WHANDLER_RET(zv)    return
+# if PHP_VERSION_ID < 70300
+# define GC_ADDREF(gc)           (++GC_REFCOUNT(gc))
+# define GC_DELREF(gc)           (--GC_REFCOUNT(gc))
+# endif
+#else
+#define LXX_WRITE_HANDLER       zval *
+#define LXX_WHANDLER_RET(zv)    return zv
+#endif
+
+#if PHP_VERSION_ID < 80000
+#define lxx_object zval
+#else
+#define lxx_object zend_object
+#endif
+
 
 ZEND_BEGIN_MODULE_GLOBALS(lxx)
 	zend_string *app_dir;
