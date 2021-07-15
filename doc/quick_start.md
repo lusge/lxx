@@ -2,6 +2,11 @@
 
 将本目录下的demo文件夹拷贝至你的web目录下，即可访问
 
+或者使用composer
+```
+composer create-project lusge/lxx you_name
+```
+
 ### 目录结构
 
 ```

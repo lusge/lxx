@@ -19,12 +19,21 @@
 
 ZEND_DECLARE_MODULE_GLOBALS(lxx);
 
+PHP_INI_BEGIN()
+	STD_PHP_INI_BOOLEAN("lxx.use_swoole",     "Off", PHP_INI_ALL, OnUpdateBool, use_swoole, zend_lxx_globals, lxx_globals)
+PHP_INI_END();
+
+PHP_GINIT_FUNCTION(lxx)
+{
+	memset(lxx_globals, 0, sizeof(*lxx_globals));
+}
+
 /* 初始化module时运行 */
 PHP_MINIT_FUNCTION(lxx)
 {
-	/* If you have INI entries, uncomment these lines
 	REGISTER_INI_ENTRIES();
-	*/
+
+
 	LXX_STARTUP(application);
 	LXX_STARTUP(config);
 	LXX_STARTUP(controller);
@@ -39,9 +48,8 @@ PHP_MINIT_FUNCTION(lxx)
 /* 当module被卸载时运行 */
 PHP_MSHUTDOWN_FUNCTION(lxx)
 {
-    /* uncomment this line if you have INI entries
-    UNREGISTER_INI_ENTRIES();
-    */
+    // UNREGISTER_INI_ENTRIES();
+    
     return SUCCESS;
 }
 
@@ -75,18 +83,13 @@ PHP_MINFO_FUNCTION(lxx)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "lxx support", "enabled");
+	php_info_print_table_row(2, "Author", "卢喜羲 <www.a22c.com>");
+	php_info_print_table_row(2, "Version", PHP_LXX_VERSION);
+	
 	php_info_print_table_end();
+
+	DISPLAY_INI_ENTRIES();
 }
-/* }}} */
-
-/* {{{ arginfo
- */
-ZEND_BEGIN_ARG_INFO(arginfo_lxx_test1, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO(arginfo_lxx_test2, 0)
-	ZEND_ARG_INFO(0, str)
-ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ lxx_module_entry

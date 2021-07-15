@@ -35,6 +35,7 @@ extern zend_module_entry lxx_module_entry;
 ZEND_BEGIN_MODULE_GLOBALS(lxx)
 	zend_string *app_dir;
 	zval		app;
+	zend_bool	use_swoole;
 ZEND_END_MODULE_GLOBALS(lxx)
 
 extern ZEND_DECLARE_MODULE_GLOBALS(lxx);
