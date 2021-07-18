@@ -12,9 +12,6 @@ typedef struct {
     zval        response;
     zval        request;
     zval        config;
-    zval        sw_server;
-    zval        sw_request;
-    zval        sw_response;
     zend_object std;
 } lxx_application_t;
 

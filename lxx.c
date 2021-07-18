@@ -20,7 +20,7 @@
 ZEND_DECLARE_MODULE_GLOBALS(lxx);
 
 PHP_INI_BEGIN()
-	STD_PHP_INI_BOOLEAN("lxx.use_swoole",     "Off", PHP_INI_ALL, OnUpdateBool, use_swoole, zend_lxx_globals, lxx_globals)
+	// STD_PHP_INI_BOOLEAN("lxx.use_swoole",     "Off", PHP_INI_ALL, OnUpdateBool, use_swoole, zend_lxx_globals, lxx_globals)
 PHP_INI_END();
 
 PHP_GINIT_FUNCTION(lxx)
@@ -83,7 +83,7 @@ PHP_MINFO_FUNCTION(lxx)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "lxx support", "enabled");
-	php_info_print_table_row(2, "Author", "卢喜羲 <www.a22c.com>");
+	php_info_print_table_row(2, "Author", "卢喜羲 <www.a22c.com> ");
 	php_info_print_table_row(2, "Version", PHP_LXX_VERSION);
 	
 	php_info_print_table_end();
