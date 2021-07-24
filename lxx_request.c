@@ -71,6 +71,15 @@ zval *lxx_request_get_server(char *key, size_t len) {
     return ret;
 }
 
+static zval *lxx_request_get_globals(zend_string *key, unsigned int type) {
+    
+    zval *ret = NULL;
+
+    zval *_server = &PG(http_globals)[type]; //
+    ret = zend_hash_find(Z_ARRVAL_P(_server),key);
+    return ret;
+}
+
 zend_string *lxx_request_get_method(zend_object *object) {
     lxx_request_t *request = lxx_request_fetch(object);
 
@@ -217,7 +226,7 @@ ZEND_METHOD(lxx_request, getParams) {
     RETURN_ZVAL(&ret, 0, 1);
 }
 
-ZEND_METHOD(lxx_request, getParam) {
+ZEND_METHOD(lxx_request, get) {
     zend_string *name;
     zval *val;
 
@@ -235,6 +244,45 @@ ZEND_METHOD(lxx_request, getParam) {
     RETURN_NULL();
 }
 
+ZEND_METHOD(lxx_request, getParam) {
+    zend_string *name;
+    zval *val;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &name) == FAILURE) {
+        return;
+    }
+
+    lxx_request_t *request = lxx_request_fetch(THIS_P);
+
+    val = zend_hash_find(request->params, name);
+    if (val) {
+        RETURN_ZVAL(val, 1, 0);
+    } else {
+        val = lxx_request_get_globals(name, TRACK_VARS_GET);
+        if (val) {
+            RETURN_ZVAL(val, 1, 0);
+        }
+    }
+
+    RETURN_NULL();
+}
+
+ZEND_METHOD(lxx_request, post) {
+    zend_string *name;
+    zval *val;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &name) == FAILURE) {
+        return;
+    }
+
+    val = lxx_request_get_globals(name, TRACK_VARS_POST);
+
+    if (val) {
+        RETURN_ZVAL(val, 1, 0);
+    }
+    RETURN_NULL();
+}
+
 
 static zend_function_entry lxx_request_methods[] = {
     ZEND_ME(lxx_request, getBaseUri, NULL, ZEND_ACC_PUBLIC)
@@ -245,6 +293,8 @@ static zend_function_entry lxx_request_methods[] = {
     ZEND_ME(lxx_request, setMethod, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_request, getParams, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_request, getParam, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_request, get, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_request, post, NULL, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 
