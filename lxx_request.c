@@ -283,6 +283,22 @@ ZEND_METHOD(lxx_request, post) {
     RETURN_NULL();
 }
 
+ZEND_METHOD(lxx_request, cookie) {
+    zend_string *name;
+    zval *val;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &name) == FAILURE) {
+        return;
+    }
+
+    val = lxx_request_get_globals(name, TRACK_VARS_COOKIE);
+
+    if (val) {
+        RETURN_ZVAL(val, 1, 0);
+    }
+    RETURN_NULL();
+}
+
 
 static zend_function_entry lxx_request_methods[] = {
     ZEND_ME(lxx_request, getBaseUri, NULL, ZEND_ACC_PUBLIC)
@@ -295,6 +311,7 @@ static zend_function_entry lxx_request_methods[] = {
     ZEND_ME(lxx_request, getParam, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_request, get, NULL, ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_request, post, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_request, cookie, NULL, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 
