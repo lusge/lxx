@@ -16,6 +16,7 @@
 #include "lxx_response.h"
 #include "lxx_request.h"
 #include "lxx_config.h"
+#include "lxx_exception.h"
 
 zend_class_entry *lxx_application_ce;
 static zend_object_handlers lxx_application_handlers;
@@ -181,28 +182,40 @@ ZEND_METHOD(lxx_application, app) {
 }
 
 ZEND_METHOD(lxx_application, run) {
+
     lxx_application_bootstrap();
     lxx_application_function_handle(getThis()); 
 }
 
+// ZEND_METHOD(lxx_application, swCallback) {
+//     zval *request, *response;
+
+//     if (zend_parse_parameters(ZEND_NUM_ARGS(), "oo", &request, &response) == FAILURE) {
+//         return;
+//     }
 
 
-ZEND_METHOD(lxx_application, getRouter) {
+//     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
+
+//     // RETURN_ZVAL(&app->router, 1, 0);
+// }
+
+ZEND_METHOD(lxx_application, Router) {
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
     RETURN_ZVAL(&app->router, 1, 0);
 }
 
-ZEND_METHOD(lxx_application, getRequest) {
+ZEND_METHOD(lxx_application, Request) {
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
     RETURN_ZVAL(&app->request, 1, 0);
 }
 
-ZEND_METHOD(lxx_application, getConfig) {
+ZEND_METHOD(lxx_application, Config) {
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
     RETURN_ZVAL(&app->config, 1, 0);
 }
 
-ZEND_METHOD(lxx_application, getResponse) {
+ZEND_METHOD(lxx_application, Response) {
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(getThis()));
     RETURN_ZVAL(&app->response, 1, 0);
 }
@@ -217,11 +230,12 @@ ZEND_END_ARG_INFO()
 zend_function_entry lxx_application_methods[] = {
     ZEND_ME(lxx_application, __construct, lxx_application_ctor_arginfo, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
     ZEND_ME(lxx_application, app, lxx_application_null_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    ZEND_ME(lxx_application, run, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_application, getRouter, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_application, getRequest, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_application, getConfig, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
-    ZEND_ME(lxx_application, getResponse, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, run, NULL, ZEND_ACC_PUBLIC)
+    // ZEND_ME(lxx_application, swCallback, NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, Router, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, Request, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, Config, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
+    ZEND_ME(lxx_application, Response, lxx_application_null_arginfo, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 
