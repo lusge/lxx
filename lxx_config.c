@@ -68,8 +68,19 @@ zval *lxx_config_get_key_value(zend_object *object, const char *key) {
     return retval;
 }
 
-zend_function_entry lxx_config_methods[] = {
+ZEND_METHOD(lxx_config, get) {
+    zend_string *key;
 
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &key) == FAILURE) {
+        return;
+    }
+
+    zval *ret = lxx_config_get_key_value(THIS_P, ZSTR_VAL(key));
+    RETURN_ZVAL(ret, 1, 0);
+}
+
+zend_function_entry lxx_config_methods[] = {
+    ZEND_ME(lxx_config, get, NULL, ZEND_ACC_PUBLIC)
     ZEND_FE_END
 };
 
