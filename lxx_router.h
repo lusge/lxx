@@ -13,7 +13,7 @@ typedef struct {
 
 void lxx_router_instance(zval *this_ptr);
 
-zval *lxx_router_match_router(zend_object *object);
+zval *lxx_router_match_router();
 
 void lxx_router_set_controller(zend_object *object, zend_string *controller);
 

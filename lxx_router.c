@@ -184,17 +184,17 @@ release:
     zend_string_release(key);
 }
 
-zval *lxx_router_match_router(zend_object *object) {
+zval *lxx_router_match_router() {
     zend_string *method;
     zend_string *base_uri;
     zend_string *new_path;
     zend_long idx;
     zval *route;
     pcre_cache_entry *pce_regexp;
-
-    lxx_router_t *router = lxx_router_fetch(object);
+    
     lxx_application_t *app = LXXAPPOBJ();
-
+    lxx_router_t *router = lxx_router_fetch(Z_OBJ(app->router));
+// php_var_dump(&router->radix_tree, 1);
     method = lxx_request_get_method(Z_OBJ(app->request));
     if (!method) {
         zend_string_release(method);
@@ -230,7 +230,7 @@ zval *lxx_router_match_router(zend_object *object) {
     idx = lxx_rax_tree_pre_seach(Z_OBJ(router->radix_tree), "<=", new_path);
     zend_string_release(method);
     zend_string_release(base_uri);
-
+    // zend_printf("%s, %s -- %d", method->val, new_path->val, idx);
     if (idx == -1) {
         zend_string_release(new_path);
         return NULL;;

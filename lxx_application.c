@@ -78,8 +78,8 @@ static void lxx_application_function_handle(zval *this) {
     zval *func;
 
     lxx_application_t *app = lxx_application_fetch(Z_OBJ_P(this));
-    func = lxx_router_match_router(Z_OBJ(app->router));
-
+    func = lxx_router_match_router();
+// php_var_dump(&app->request, 1);
     if (func) {
         if (Z_TYPE_P(func) == IS_OBJECT) {
             zval retval;
